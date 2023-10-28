@@ -1,5 +1,10 @@
+:- consult('draw.pl').
+:- consult('config.pl').
+:- consult('utils.pl').
+
 play:-
-    draw_title,
-    set_config(Config),
-    game_loop(Config),
-    reset.
+        draw_title,
+        get_config(Gamemode, Size, Board),
+        write(Gamemode),nl,
+        write(Size),nl,
+        write(Board).
