@@ -4,7 +4,6 @@
 
 play:-
         draw_title,
-        get_config(Gamemode, Size, Board),
+        get_config(Gamemode, Board),
         write(Gamemode),nl,
-        write(Size),nl,
-        write(Board).
+        draw_board(Board).
