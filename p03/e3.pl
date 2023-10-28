@@ -1,3 +1,6 @@
-/* -*- Mode:Prolog; coding:iso-8859-1; indent-tabs-mode:nil; prolog-indent-width:8; prolog-paren-indent:4; tab-width:8; -*- */
+invert([], []).
+invert([X], [X]).
 
-
+invert([HX|TX], R):-
+        invert(TX, T),
+        append(T, [HX], R).
