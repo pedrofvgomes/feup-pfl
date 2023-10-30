@@ -1,4 +1,11 @@
 game_loop(Board, Size, Gamemode):-
-        format('Game starting ~w ~w ~w', [Board, Size, Gamemode]),nl,
         draw_board(Board, Size),
+        write(Gamemode),
+        check_winner(Board),
+        % get_move(Board),
+        nl.
+
+check_winner(Board):-
+        nl,
+        write('no winner'),
         nl.
