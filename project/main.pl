@@ -1,6 +1,7 @@
 :- consult('draw.pl').
 :- consult('config.pl').
 :- consult('utils.pl').
+:- consult('game.pl').
 
 play:-
     draw_title,

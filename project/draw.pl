@@ -3,16 +3,21 @@ draw_title:-
 
 draw_board([], Size):-
     Tempsize is Size,
+    write('  '),
     draw_division(Tempsize).
 draw_board([Line | Lines], Size):-
     Tempsize1 is Size,
+    write('  '),
     draw_division(Tempsize1),
     nl,
-    write('|'),
+    list_size([Line | Lines], X),
+    Y is Size - X + 1,
+    format('~w |', Y),
     draw_line(Line),
     write('|'),
     nl,
     draw_board(Lines, Size).
+
 
 draw_line([]).
 draw_line([A|B]) :-

@@ -1,2 +1,4 @@
 game_loop(Board, Size, Gamemode):-
-        draw_board(Board, Size). 
+        format('Game starting ~w ~w ~w', [Board, Size, Gamemode]),nl,
+        draw_board(Board, Size),
+        nl.
