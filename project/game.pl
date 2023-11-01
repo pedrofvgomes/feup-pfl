@@ -1,10 +1,11 @@
-:- consult('draw.pl').
-:- consult('config.pl').
-:- consult('utils.pl').
+game_loop(Board, Size, Gamemode):-
+        draw_board(Board, Size),
+        write(Gamemode),
+        check_winner(Board),
+        % get_move(Board),
+        nl.
 
-play:-
-        draw_title,
-        get_config(Gamemode, Size, Board),
-        write(Gamemode),nl,
-        write(Size),nl,
-        write(Board).
+check_winner(Board):-
+        nl,
+        write('no winner'),
+        nl.
