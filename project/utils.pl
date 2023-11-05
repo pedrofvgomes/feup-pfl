@@ -24,5 +24,9 @@ update_board([A1|B1], X, Y, Value, [A2|B2]) :-
         update_list(Row, X, Value, NewRow),
         update_list([A1|B1], Y, NewRow, [A2|B2]). 
 
-neighbors(X1, Y1, X2, Y2) :-
-        (X1 is X2, abs(Y1 - Y2) =:= 1) ; (Y1 is Y2, abs(X1 - X2) =:= 1).       
+neighbors(Board, X1, Y1, X2, Y2) :-
+        ((X1 is X2, abs(Y1 - Y2) =:= 1) ; (Y1 is Y2, abs(X1 - X2) =:= 1)),
+        board_index(Board, X1, Y1, V1),
+        board_index(Board, X2, Y2, V2),
+        V1 is V2.
+
