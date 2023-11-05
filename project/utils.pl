@@ -30,8 +30,8 @@ find_in_list([_|B], Value, Index):-
         find_in_list(B, Value, Index1),
         Index is Index1 + 1.
 
-find_in_board([Row|Rest], Value, X, Y) :-
-        find_in_list(Row, Value, X1),
-        (X1 < 0 -> (find_in_board(Rest,Value,X,Y1), Y is Y1 + 1); (X = X1, Y = 0)).
+find_in_board([A|B], Value, X, Y) :-
+        find_in_list(A, Value, X1),
+        (X1 < 0 -> (find_in_board(B,Value,X,Y1), Y is Y1 + 1); (X = X1, Y = 0)).
 find_in_board([], _, -1000, -1000).
             
