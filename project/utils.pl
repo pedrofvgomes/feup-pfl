@@ -11,3 +11,10 @@ list_index([_|B], Index, Item):-
 board_index([A|B], X, Y, Item):-
         list_index([A|B], Y, Row),
         list_index(Row, X, Item).
+
+update_list([], _, _, []).
+update_list([_|B], 0, Value, [Value|B]).
+update_list([A|B1], Index, Value, [A|B2]) :-
+        Index > 0,
+        I1 is Index - 1,
+        update_list(B1, I1, Value, B2).
