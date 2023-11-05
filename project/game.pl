@@ -13,7 +13,6 @@ check_winner(Board):-
         write('no winner'),
         nl.
 
-
 get_move(Board, Player, Updatedboard) :-
         write('================'), nl,
         write('    Player '),
