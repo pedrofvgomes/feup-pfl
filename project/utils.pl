@@ -21,6 +21,8 @@ update_list([A|B1], Index, Value, [A|B2]) :-
 
 update_board([A1|B1], X, Y, Value, [A2|B2]) :-
         list_index([A1|B1], Y, Row),   
-        update_list(Row, X, Value, NewRow),  
+        update_list(Row, X, Value, NewRow),
         update_list([A1|B1], Y, NewRow, [A2|B2]). 
-        
+
+neighbors(X1, Y1, X2, Y2) :-
+        (X1 is X2, abs(Y1 - Y2) =:= 1) ; (Y1 is Y2, abs(X1 - X2) =:= 1).       
