@@ -24,5 +24,14 @@ update_board([A1|B1], X, Y, Value, [A2|B2]) :-
         update_list(Row, X, Value, NewRow),
         update_list([A1|B1], Y, NewRow, [A2|B2]). 
 
-neighbors(X1, Y1, X2, Y2) :-
-        (X1 is X2, abs(Y1 - Y2) =:= 1) ; (Y1 is Y2, abs(X1 - X2) =:= 1).       
+find_in_list([A|_], A, 0).
+find_in_list([], _, -100000).
+find_in_list([_|B], Value, Index):-
+        find_in_list(B, Value, Index1),
+        Index is Index1 + 1.
+
+find_in_board([A|B], Value, X, Y) :-
+        find_in_list(A, Value, X1),
+        (X1 < 0 -> (find_in_board(B,Value,X,Y1), Y is Y1 + 1); (X = X1, Y = 0)).
+find_in_board([], _, -1000, -1000).
+            

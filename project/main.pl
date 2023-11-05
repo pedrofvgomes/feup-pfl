@@ -6,4 +6,4 @@
 play:-
     draw_title,
     get_config(Gamemode, Board, Size),
-    game_loop(Board, Size, Gamemode).
+    game_loop(Board, Gamemode, 'X').
