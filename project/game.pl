@@ -9,3 +9,5 @@ check_winner(Board):-
         nl,
         write('no winner'),
         nl.
+
+
