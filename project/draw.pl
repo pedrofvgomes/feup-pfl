@@ -44,3 +44,12 @@ draw_x_axis(8):-
     write('    A   B   C   D   E   F   G   H'),nl.
 draw_x_axis(10):-
     write('    A   B   C   D   E   F   G   H   I   J'),nl.
+
+
+win_screen(Winner):-
+    write('\33\[2J'),nl,
+    format('+-----------------+\n'),
+    format('|                 |\n'),
+    format('| Player ~w wins! |\n',Winner),
+    format('|                 |\n'),
+    format('+-----------------+\n').

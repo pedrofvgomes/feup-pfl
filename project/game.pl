@@ -1,17 +1,22 @@
 game_loop(Board, Gamemode, Player):-
         draw_board(Board),
         write(Gamemode),
-        check_winner(Board),
+%        check_winner(Board),
         nl,nl,
         get_move(Board, Player, Updatedboard),
         (Player = 'X' -> Newplayer = 'O'; Newplayer = 'X'),
         write('a'),
         game_loop(Updatedboard, Gamemode, Newplayer).
-
+/*
 check_winner(Board):-
-        nl,
-        write('no winner'),
-        nl.
+        get_groups(Board, 'X', Groups1),
+        list_size(Groups1, S1),
+        get_groups(Board, 'O', Groups2),
+        list_size(Groups2, S2),
+
+        (S1 = 1 -> win_screen('X'); 
+        (S2 = 1 -> win_screen('O'); !)).
+*/
 
 get_move(Board, Player, Updatedboard) :-
         write('================'), nl,
