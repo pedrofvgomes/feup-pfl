@@ -37,89 +37,45 @@ find_in_board([A|B], Value, X, Y) :-
         (X1 < 0 -> (find_in_board(B,Value,X,Y1), Y is Y1 + 1); (X = X1, Y = 0)).
 find_in_board([], _, -1000, -1000).
 
-
 get_groups(_, [], _, _).
 get_groups(Size, [Row|Rest], Player, Groups):-
-        list_size([Row|Rest], S),
-        Y is Size - S,
-        (Y = 0 -> Groups = []; !),
-        get_groups_in_row(Row, [Row|Rest], Player, Y, Groups, Newgroups),
-        write('this is the groups updated'),write(Y),nl,write(Groups),nl,
-        get_groups(Size, Rest, Player, Newgroups).
+    list_size([Row|Rest], S),
+    Y is Size - S,
+    (Y = 0 -> Groups = []; !),
+    get_groups_in_row(Row, [Row|Rest], Player, Y, Groups, Newgroups),
+    write('Groups updated'), nl,
+    write(Newgroups), nl,
+    get_groups(Size, Rest, Player, Newgroups).
 
 get_groups_in_row([A|B], Board, Player, Y, Groups, Newgroups):-
-        write('this is groups '), write(Groups),nl,
-        list_size([A|B], Size1),
-        list_size(Board, Size2),
-        X is Size2-Size1,
+    list_size([A|B], Size1),
+    list_size(Board, Size2),
+    X is Size2 - Size1,
     
-        board_index(Board, X, Y, Current),
-        
-        (Current = Player ->(
-        
-                write('equal'),nl,
-                Y1 is Y-1,
-                Y2 is Y+1,
-                X1 is X-1,
-                X2 is X+1,
-            
-                % Determine which neighbor is in Groups
-                (   (find_in_board(Groups, [X, Y1], N1X, N1Y), N1X > -1, N1Y > -1) -> (NX is N1X, NY is N1Y)
-                ;   (   (find_in_board(Groups, [X, Y2], N2X, N2Y), N2X > -1, N2Y > -1) -> (NX is N2X, NY is N2Y)
-                ;   (   (find_in_board(Groups, [X1, Y], N3X, N3Y), N3X > -1, N3Y > -1) -> (NX is N3X, NY is N3Y)
-                ;   (   (find_in_board(Groups, [X2, Y], N4X, N4Y), N4X > -1, N4Y > -1) -> (NX is N4X, NY is N4Y)
-                ;   (NX is -1, NY is -1))))),
-                
-                % Check if a neighbor was found in Groups
-                write('Trying '), write(NX), write(NY), nl,nl,nl,
-                (NX > -1, NY > -1) ->
-                        % Found a neighbor in an existing group
-                        (list_index(Groups, Y, Group),
-                         Newgroup = [[X, Y] | Group],
-                         update_list(Groups, NY, Newgroup, Newgroups),
-                         write('added'),nl,
-                         write(Newgroup),nl,
-                         write(Newgroups)
-                        )
-                ;
-                % Neighbor was not found, add to a new group
-                Newgroups = [[[X, Y]] | Groups],
-            
-                get_groups_in_row(B, Board, Player, Y, Newgroups, New)); get_groups_in_row(B, Board, Player, Y, Groups, New)).
-get_groups_in_row([A], Board, Player, Y, Groups, Newgroups):-
-        write('this is groups '), write(Groups),nl,
-        list_size([A|B], Size1),
-        list_size(Board, Size2),
-        X is Size2-Size1,
+    board_index(Board, X, Y, Current),
     
-        board_index(Board, X, Y, Current),
+    (Current = Player ->(
+        Y1 is Y - 1,
+        Y2 is Y + 1,
+        X1 is X - 1,
+        X2 is X + 1,
         
-        (Current = Player ->(
+        (   (find_in_board(Groups, [X, Y1], N1X, N1Y), N1X > -1, N1Y > -1) -> (NX is N1X, NY is N1Y)
+        ;   (   (find_in_board(Groups, [X, Y2], N2X, N2Y), N2X > -1, N2Y > -1) -> (NX is N2X, NY is N2Y)
+        ;   (   (find_in_board(Groups, [X1, Y], N3X, N3Y), N3X > -1, N3Y > -1) -> (NX is N3X, NY is N3Y)
+        ;   (   (find_in_board(Groups, [X2, Y], N4X, N4Y), N4X > -1, N4Y > -1) -> (NX is N4X, NY is N4Y)
+        ;   (NX is -1, NY is -1)))), 
         
-                write('equal'),nl,
-                Y1 is Y-1,
-                Y2 is Y+1,
-                X1 is X-1,
-                X2 is X+1,
-            
-                % Determine which neighbor is in Groups
-                (   (find_in_board(Groups, [X, Y1], N1X, N1Y), N1X > -1, N1Y > -1) -> (NX is N1X, NY is N1Y)
-                ;   (   (find_in_board(Groups, [X, Y2], N2X, N2Y), N2X > -1, N2Y > -1) -> (NX is N2X, NY is N2Y)
-                ;   (   (find_in_board(Groups, [X1, Y], N3X, N3Y), N3X > -1, N3Y > -1) -> (NX is N3X, NY is N3Y)
-                ;   (   (find_in_board(Groups, [X2, Y], N4X, N4Y), N4X > -1, N4Y > -1) -> (NX is N4X, NY is N4Y)
-                ;   (NX is -1, NY is -1))))),
-                
-                % Check if a neighbor was found in Groups
-                write('Trying '), write(NX), write(NY), nl,nl,nl,
-                (NX > -1, NY > -1) ->
-                        % Found a neighbor in an existing group
-                        (list_index(Groups, Y, Group),
-                         Newgroup = [[X, Y] | Group],
-                         update_list(Groups, NY, Newgroup, Newgroups),
-                         write('added'),nl,
-                         write(Newgroup),nl,
-                         write(Newgroups)
-                        )
-                ;
-                % Neighbor was not found, add to a new group
-                Newgroups = [[[X, Y]] | Groups]); !).
+        (NX > -1, NY > -1) ->
+            % Found a neighbor in an existing group
+            (list_index(Groups, NY, Group),
+             Newgroup = [[X, Y] | Group],
+             update_list(Groups, NY, Newgroup, Newgroups),
+             write('Added'), nl,
+             write(Newgroup), nl,
+             write(Newgroups)
+            )
+        ;
+        Newgroups = [[[X, Y]] | Groups])
+    ); !),
+    get_groups_in_row(B, Board, Player, Y, Newgroups, New).
