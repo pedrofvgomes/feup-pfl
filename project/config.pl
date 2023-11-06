@@ -1,13 +1,8 @@
-get_config(Gamemode, Board, Size):-
+get_config(Board, Size):-
         write('\33\[2J'),nl,
-        write('SELECT GAME MODE'),nl,
-        write('1) Player VS Player'),nl,
-        write('2) Player VS AI'),nl,
-        write('3) AI VS AI'),nl,
-        read_line([G1|_]),
-        char_code(Gamemode, G1),
-        
-        write('\33\[2J'),nl,
+        write('=================='),nl,
+        write('      BOUNCE      '),nl,
+        write('=================='),nl,nl,
         write('SELECT BOARD SIZE'),nl,
         write('1) 6x6'),nl,
         write('2) 8x8'),nl,

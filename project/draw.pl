@@ -1,6 +1,3 @@
-draw_title:-
-    write('title'),nl.
-
 draw_board([A|B]):-
     write('\33\[2J'),nl,
     list_size(A, Size),
