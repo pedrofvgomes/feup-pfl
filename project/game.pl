@@ -41,7 +41,8 @@ get_move(Board, Player, Updatedboard) :-
         board_index(Board, Column1, Row1, Value1),
         board_index(Board, Column2, Row2, Value2),
 
-        ((Value1 = Player, Value2 = ' ') ->
+        list_size(Board, Size),
+        ((Value1 = Player, Value2 = ' ', Row1 > -1, Row1 < Size, Row2 > -1, Row2 < Size, Column1 > -1, Column1 < Size, Column2 > -1, Column2 < Size) ->
                 (update_board(Board, Column2, Row2, Value1, Tempboard),
                 update_board(Tempboard, Column1, Row1, Value2, Updatedboard),
                 nl, nl)
