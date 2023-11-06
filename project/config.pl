@@ -1,4 +1,4 @@
-get_config(Board, Size):-
+get_config(Board):-
         write('\33\[2J'),nl,
         write('=================='),nl,
         write('      BOUNCE      '),nl,

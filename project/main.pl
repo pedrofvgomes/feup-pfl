@@ -4,5 +4,5 @@
 :- consult('game.pl').
 
 play:-
-    get_config(Board, Size),
+    get_config(Board),
     game_loop(Board, 'X').

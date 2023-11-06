@@ -76,4 +76,4 @@ get_groups_in_row([A|B], Board, Player, Y, Groups, Newgroups):-
         ;
         Newgroups = [[[X, Y]] | Groups])
     ); !),
-    get_groups_in_row(B, Board, Player, Y, Newgroups, New).
+    get_groups_in_row(B, Board, Player, Y, Newgroups, _).
