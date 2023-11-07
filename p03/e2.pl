@@ -1,30 +1,25 @@
-% ex 2a
+list_size([], 0).
+list_size([_|B], Size):-
+        list_size(B, Size1),
+        Size is Size1 + 1.
 
-list_size([],0).
-list_size([_|T], Size):-
-        list_size(T, Newsize),
-        Size is Newsize+1.
+list_sum([A], A).
+list_sum([A|B], Sum):-
+        list_sum(B, Newsum),
+        Sum is Newsum + A.
 
-% ex 2b
-list_sum([], 0).
-list_sum([H|T], Sum):-
-        list_sum(T, Newsum),
-        Sum is Newsum+H.
+list_prod([A], A).
+list_prod([A|B], Prod):-
+        list_prod(B, Newprod),
+        Prod is Newprod*A.
 
-% ex 2c
-list_prod([X], X).
-list_prod([H|T], Prod):-
-        list_prod(T, Newprod),
-        Prod is Newprod*H.
+inner_product([A1], [A2], Result):-
+        Result is A1*A2.
+inner_product([A1|B1], [A2|B2], Result):-
+        inner_product(B1, B2, Newresult),
+        Result is Newresult + A1*A2.
 
-% ex 2d
-inner_product([X], [Y], [X*Y]).
-inner_product([H1|T1], [H2|T2], Prod):-
-        inner_product(T1, T2, Newprod),
-        Prod is Newprod + H1*H2.
-
-% ex 2e
 count(_, [], 0).
-count(X, [H|T], N):-
-        count(X, T, N1),
-        if(X==H, N is N1+1, N is N1).
+count(Element, [A|B], N):-
+        count(Element, B, N1),
+        (Element =:= A -> N is N1 + 1; N is N1).        
