@@ -27,8 +27,8 @@ createEmptyState = []
 stack2Str :: Stack -> String
 stack2Str stack = intercalate "," stack
 
--- state2Str :: State -> String
-state2Str = undefined -- TODO
+state2Str :: State -> String
+state2Str = intercalate "," . map (\(var, val) -> var ++ "=" ++ val)
 
 -- run :: (Code, Stack, State) -> (Code, Stack, State)
 run = undefined -- TODO
