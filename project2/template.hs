@@ -1,4 +1,5 @@
 import Data.List (sort, intercalate)
+import Data.Char (isDigit)
 
 -- PFL 2023/24 - Haskell practical assignment quickstart
 -- Updated on 27/12/2023
@@ -28,10 +29,76 @@ stack2Str :: Stack -> String
 stack2Str stack = intercalate "," stack
 
 state2Str :: State -> String
-state2Str = intercalate "," . map (\(var, val) -> var ++ "=" ++ val)
+state2Str = intercalate "," . map (\(var, val) -> var ++ "=" ++ val) . sort
 
--- run :: (Code, Stack, State) -> (Code, Stack, State)
-run = undefined -- TODO
+run :: (Code, Stack, State) -> (Code, Stack, State)
+run ([], stack, state) = ([], stack, state)
+run (inst:insts, stack, state) = case inst of
+  Push n -> run (insts, (show n):stack, state)
+  Add -> applyBinaryOperation (+)
+  Mult -> applyBinaryOperation (*)
+  Sub -> applyBinaryOperation (-)
+  Tru -> pushValue "True"
+  Fals -> pushValue "False"
+  Equ -> case stack of 
+    x:y:rest -> if (elem x ["True", "False"] && elem y ["True", "False"]) || (all isDigit x && all isDigit y)
+      then run (insts, (show (x == y)):rest, state)
+      else error "Run-time error: Invalid operands"
+    _ -> error "Run-time error: Operation requires at least two elements on the stack"
+  Le -> case stack of
+    x:y:rest -> if all isDigit x && all isDigit y || x !! 0 == '-' && all isDigit (drop 1 x) && y !! 0 == '-' && all isDigit (drop 1 y)
+      then run (insts, (show ((read x :: Integer) <= (read y :: Integer))):rest, state)
+      else error "Run-time error: Invalid operands"
+    _ -> error "Run-time error: Operation requires at least two elements on the stack"
+  And -> applyLogicOperation (&&)
+  Neg -> applyNegationOperation
+  Fetch var -> runFetch var
+  Store var -> runStore var
+  Noop -> run (insts, stack, state)
+  Branch c1 c2 -> runBranch c1 c2
+  Loop c1 c2 -> runLoop c1 c2
+  where
+    -- Funções auxiliares para as instruções
+    applyBinaryOperation op = case stack of
+      x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
+      _ -> error "Run-time error: Operation requires at least two elements on the stack"
+
+    applyLogicOperation op = case stack of
+      x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
+      _ -> error "Run-time error: Operation requires at least two elements on the stack"
+
+    applyNegationOperation = case stack of
+      x:rest -> run (insts, (show (not (read x))):rest, state)
+      _ -> error "Run-time error: Operation requires at least one element on the stack"
+
+    pushValue val = run (insts, val:stack, state)
+
+    runFetch var = case lookup var state of
+      Just val -> run (insts, val:stack, state)
+      Nothing -> error $ "Run-time error: Variable " ++ var ++ " not found"
+
+    runStore var =
+      case stack of
+        val:rest ->
+          case lookup var state of
+            Just _  -> run (insts, rest, updateState var val state)
+            Nothing -> run (insts, rest, (var, val):state)
+        _ -> error "Run-time error: Operation requires at least one element on the stack"
+      where
+        updateState :: String -> String -> State -> State
+        updateState key newVal [] = [(key, newVal)]
+        updateState key newVal ((k, v):rest)
+          | key == k  = (key, newVal) : rest
+          | otherwise = (k, v) : updateState key newVal rest
+
+    runBranch c1 c2 = case stack of
+      val:rest -> if val == "True" then run (c1 ++ insts, rest, state) else run (c2 ++ insts, rest, state)
+      _ -> error "Ru1n-time error: Operation requires at least one element on the stack"
+
+    runLoop c1 c2 = case stack of
+      "True":rest -> run (c1 ++ [Branch c2 [Loop c1 c2]], rest, state)
+      "False":rest -> run (Noop:insts, rest, state)
+      _ -> error "Run-time error: Loop expects True or False on the stack"
 
 -- To help you test your assembler
 testAssembler :: Code -> (String, String)
