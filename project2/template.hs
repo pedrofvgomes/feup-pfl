@@ -1,3 +1,5 @@
+import Data.List (sort, intercalate)
+
 -- PFL 2023/24 - Haskell practical assignment quickstart
 -- Updated on 27/12/2023
 
@@ -19,11 +21,11 @@ type State = [(String, String)]
 createEmptyStack :: Stack
 createEmptyStack = []
 
--- stack2Str :: Stack -> String
-stack2Str = undefined -- TODO, Uncomment all the other function type declarations as you implement them
-
 createEmptyState :: State
 createEmptyState = []
+
+stack2Str :: Stack -> String
+stack2Str stack = intercalate "," stack
 
 -- state2Str :: State -> String
 state2Str = undefined -- TODO
