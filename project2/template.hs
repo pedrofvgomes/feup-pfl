@@ -10,6 +10,12 @@ data Inst =
   deriving Show
 type Code = [Inst]
 
+-- storing as a list of strings (either numeric strings or boolean strings, to be converted later)
+type Stack = [String]
+
+-- storing as a list of pairs of strings (either numeric strings or boolean strings, to be converted later)
+type State = [(String, String)]
+
 -- createEmptyStack :: Stack
 createEmptyStack = undefined -- TODO, Uncomment the function signature after defining Stack
 
