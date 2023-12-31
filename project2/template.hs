@@ -16,14 +16,14 @@ type Stack = [String]
 -- storing as a list of pairs of strings (either numeric strings or boolean strings, to be converted later)
 type State = [(String, String)]
 
--- createEmptyStack :: Stack
-createEmptyStack = undefined -- TODO, Uncomment the function signature after defining Stack
+createEmptyStack :: Stack
+createEmptyStack = []
 
 -- stack2Str :: Stack -> String
 stack2Str = undefined -- TODO, Uncomment all the other function type declarations as you implement them
 
--- createEmptyState :: State
-createEmptyState = undefined -- TODO, Uncomment the function signature after defining State
+createEmptyState :: State
+createEmptyState = []
 
 -- state2Str :: State -> String
 state2Str = undefined -- TODO
