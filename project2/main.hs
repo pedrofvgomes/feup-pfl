@@ -152,6 +152,8 @@ data Bexp =
 data Stm = Assign String Aexp | If Bexp Stm Stm | While Bexp [Stm] | Seq [Stm]
   deriving (Show, Eq)
 
+type Program = [Stm]
+
 compA :: Aexp -> Code
 compA code = case code of
   Var x -> [Fetch x]
