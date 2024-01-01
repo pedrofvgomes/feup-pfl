@@ -43,13 +43,13 @@ run (inst:insts, stack, state) = case inst of
   Equ -> case stack of 
     x:y:rest -> if (elem x ["True", "False"] && elem y ["True", "False"]) || (all isDigit x && all isDigit y || x !! 0 == '-' && all isDigit (drop 1 x) && y !! 0 == '-' && all isDigit (drop 1 y))
       then run (insts, (show (x == y)):rest, state)
-      else error "Run-time error: Invalid operands"
-    _ -> error "Run-time error: Operation requires at least two elements on the stack"
+      else error "Run-time error"
+    _ -> error "Run-time error"
   Le -> case stack of
     x:y:rest -> if all isDigit x && all isDigit y || x !! 0 == '-' && all isDigit (drop 1 x) && y !! 0 == '-' && all isDigit (drop 1 y)
       then run (insts, (show ((read x :: Integer) <= (read y :: Integer))):rest, state)
-      else error "Run-time error: Invalid operands"
-    _ -> error "Run-time error: Operation requires at least two elements on the stack"
+      else error "Run-time error"
+    _ -> error "Run-time error"
   And -> applyLogicOperation (&&)
   Neg -> applyNegationOperation
   Fetch var -> runFetch var
@@ -61,21 +61,21 @@ run (inst:insts, stack, state) = case inst of
     -- Funções auxiliares para as instruções
     applyBinaryOperation op = case stack of
       x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
-      _ -> error "Run-time error: Operation requires at least two elements on the stack"
+      _ -> error "Run-time error"
 
     applyLogicOperation op = case stack of
       x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
-      _ -> error "Run-time error: Operation requires at least two elements on the stack"
+      _ -> error "Run-time error"
 
     applyNegationOperation = case stack of
       x:rest -> run (insts, (show (not (read x))):rest, state)
-      _ -> error "Run-time error: Operation requires at least one element on the stack"
+      _ -> error "Run-time error"
 
     pushValue val = run (insts, val:stack, state)
 
     runFetch var = case lookup var state of
       Just val -> run (insts, val:stack, state)
-      Nothing -> error $ "Run-time error: Variable " ++ var ++ " not found"
+      Nothing -> error "Run-time error"
 
     runStore var =
       case stack of
@@ -83,7 +83,7 @@ run (inst:insts, stack, state) = case inst of
           case lookup var state of
             Just _  -> run (insts, rest, updateState var val state)
             Nothing -> run (insts, rest, (var, val):state)
-        _ -> error "Run-time error: Operation requires at least one element on the stack"
+        _ -> error "Run-time error"
       where
         updateState :: String -> String -> State -> State
         updateState key newVal [] = [(key, newVal)]
@@ -93,13 +93,10 @@ run (inst:insts, stack, state) = case inst of
 
     runBranch c1 c2 = case stack of
       val:rest -> if val == "True" then run (c1 ++ insts, rest, state) else run (c2 ++ insts, rest, state)
-      _ -> error "Ru1n-time error: Operation requires at least one element on the stack"
+      _ -> error "Run-time error"
 
-    runLoop c1 c2 = case stack of
-      "True":rest -> run (c1 ++ [Branch c2 [Loop c1 c2]], rest, state)
-      "False":rest -> run (Noop:insts, rest, state)
-      _ -> error $ "Run-time error: Loop expects True or False on the stack: current stack is " ++ show stack ++ " and current state is " ++ show state
-    
+    runLoop c1 c2 = run (c1 ++ [Branch (c2 ++ [Loop c1 c2]) [Noop]] ++ insts, stack, state)
+
 -- To help you test your assembler
 testAssembler :: Code -> (String, String)
 testAssembler code = (stack2Str stack, state2Str state)
