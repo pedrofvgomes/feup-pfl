@@ -92,7 +92,7 @@ run (inst:insts, stack, state) = case inst of
           | otherwise = (k, v) : updateState key newVal rest
 
     runBranch c1 c2 = case stack of
-      val:rest -> if val == "True" then run (c1 ++ insts, rest, state) else run (c2 ++ insts, rest, state)
+      val:rest -> if val == "True" then run (c1 ++ insts, rest, state) else if val == "False" then run (c2 ++ insts, rest, state) else error "Run-time error"
       _ -> error "Run-time error"
 
     runLoop c1 c2 = run (c1 ++ [Branch (c2 ++ [Loop c1 c2]) [Noop]] ++ insts, stack, state)
@@ -118,6 +118,25 @@ testAssembler code = (stack2Str stack, state2Str state)
 -- If you test:
 -- testAssembler [Tru,Tru,Store "y", Fetch "x",Tru]
 -- You should get an exception with the string: "Run-time error"
+
+-- testRuntimeError1 = testAssembler [Fetch "undefined_var"]
+-- testRuntimeError2 = testAssembler [Tru, Push 5, And]
+-- ver testRuntimeError3 = testAssembler [Push 10, Branch [Push 1] [Push 2]]
+-- testRuntimeError4 = testAssembler [Loop [] [], Fetch "x"]
+-- ver testRuntimeError5 = testAssembler [Loop [Push 1, Push 2] []]
+-- testRuntimeError6 = testAssembler [Tru, Neg, Push 5, And]
+-- ver testRuntimeError7 = testAssembler [Push 10, Store "x", Push 20, Store "x", Fetch "x"]
+-- testRuntimeError8 = testAssembler [Loop [] [Push 1, Push 2], Fetch "x"]
+-- ver testRuntimeError9 = testAssembler [Push 5, Push "String", Equ]
+-- ver testRuntimeError10 = testAssembler [Push 5, Neg]
+-- ver testRuntimeError11 = testAssembler [Push 5, Loop [Push 1, Push 2] [Push 3, Push 4]]
+-- testRuntimeError12 = testAssembler [Push 5, Branch [Push 1] [Push 2]]
+-- testRuntimeError13 = testAssembler [Push 5, Fetch "undefined_var", Push 10, Store "var", Fetch "var"]
+-- testRuntimeError14 = testAssembler [Loop [] [], And]
+-- testRuntimeError15 = testAssembler [Branch [] []]
+-- testRuntimeError16 = testAssembler [Noop, Fetch "x"]
+
+
 
 -- Part 2
 
