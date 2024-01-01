@@ -149,13 +149,13 @@ data Bexp =
   TrueB | FalseB | AndB Bexp Bexp | EqA Aexp Aexp | EqB Bexp Bexp | LeB Aexp Aexp | NotB Bexp
   deriving (Show, Eq)
 
-data Stm = Assign String Aexp | If Bexp Stm Stm | While Bexp [Stm] | Seq [Stm]
+data Stm = Assign String Aexp | If Bexp [Stm] [Stm] | While Bexp [Stm] | Seq [Stm]
   deriving (Show, Eq)
 
 type Program = [Stm]
 
 compA :: Aexp -> Code
-compA code = case code of
+compA exp = case exp of
   Var x -> [Fetch x]
   Num n -> [Push n]
   AddA a1 a2 -> compA a1 ++ compA a2 ++ [Add]
@@ -163,7 +163,7 @@ compA code = case code of
   MultA a1 a2 -> compA a1 ++ compA a2 ++ [Mult]
 
 compB :: Bexp -> Code
-compB code = case code of
+compB exp = case exp of
   TrueB -> [Tru]
   FalseB -> [Fals]
   AndB b1 b2 -> compB b1 ++ compB b2 ++ [And]
@@ -173,8 +173,16 @@ compB code = case code of
   NotB b -> compB b ++ [Neg]
 
 
--- compile :: Program -> Code
-compile = undefined -- TODO
+compile :: Program -> Code
+compile program = let code = compileStm program in code
+
+compileStm :: [Stm] -> Code
+compileStm [] = []
+compileStm (stm:rest) = case stm of 
+  Assign var a -> compA a ++ [Store var] ++ compileStm rest
+  If b s1 s2 -> compB b ++ [Branch (compileStm s1) (compileStm s2)] ++ compileStm rest
+  While b s -> [Loop (compB b) (compileStm s)] ++ compileStm rest
+  Seq s -> compileStm s ++ compileStm rest
 
 -- parse :: String -> Program
 parse = undefined -- TODO
