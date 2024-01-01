@@ -127,7 +127,7 @@ data Aexp =
   deriving (Show, Eq)
 
 data Bexp = 
-  TrueB | FalseB | AndB Bexp Bexp | EqB Aexp Aexp | LeB Aexp Aexp | NotB Bexp
+  TrueB | FalseB | AndB Bexp Bexp | EqA Aexp Aexp | EqB Bexp Bexp | LeB Aexp Aexp | NotB Bexp
   deriving (Show, Eq)
 
 data Stm = Assign String Aexp | If Bexp Stm Stm | While Bexp [Stm] | Seq [Stm]
@@ -141,6 +141,15 @@ compA code = case code of
   SubA a1 a2 -> compA a1 ++ compA a2 ++ [Sub]
   MultA a1 a2 -> compA a1 ++ compA a2 ++ [Mult]
 
+compB :: Bexp -> Code
+compB code = case code of
+  TrueB -> [Tru]
+  FalseB -> [Fals]
+  AndB b1 b2 -> compB b1 ++ compB b2 ++ [And]
+  EqA a1 a2 -> compA a1 ++ compA a2 ++ [Equ]
+  EqB b1 b2 -> compB b1 ++ compB b2 ++ [Equ]
+  LeB a1 a2 -> compA a1 ++ compA a2 ++ [Le]
+  NotB b -> compB b ++ [Neg]
 
 
 -- compile :: Program -> Code
