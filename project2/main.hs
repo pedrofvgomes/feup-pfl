@@ -133,8 +133,13 @@ data Bexp =
 data Stm = Assign String Aexp | If Bexp Stm Stm | While Bexp [Stm] | Seq [Stm]
   deriving (Show, Eq)
 
--- compA :: Aexp -> Code
-compA = undefined -- TODO
+compA :: Aexp -> Code
+compA code = case code of
+  Var x -> [Fetch x]
+  Num n -> [Push n]
+  AddA a1 a2 -> compA a1 ++ compA a2 ++ [Add]
+  SubA a1 a2 -> compA a1 ++ compA a2 ++ [Sub]
+  MultA a1 a2 -> compA a1 ++ compA a2 ++ [Mult]
 
 -- compB :: Bexp -> Code
 compB = undefined -- TODO
