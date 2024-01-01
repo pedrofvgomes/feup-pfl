@@ -41,7 +41,7 @@ run (inst:insts, stack, state) = case inst of
   Tru -> pushValue "True"
   Fals -> pushValue "False"
   Equ -> case stack of 
-    x:y:rest -> if (elem x ["True", "False"] && elem y ["True", "False"]) || (all isDigit x && all isDigit y)
+    x:y:rest -> if (elem x ["True", "False"] && elem y ["True", "False"]) || (all isDigit x && all isDigit y || x !! 0 == '-' && all isDigit (drop 1 x) && y !! 0 == '-' && all isDigit (drop 1 y))
       then run (insts, (show (x == y)):rest, state)
       else error "Run-time error: Invalid operands"
     _ -> error "Run-time error: Operation requires at least two elements on the stack"
@@ -98,8 +98,8 @@ run (inst:insts, stack, state) = case inst of
     runLoop c1 c2 = case stack of
       "True":rest -> run (c1 ++ [Branch c2 [Loop c1 c2]], rest, state)
       "False":rest -> run (Noop:insts, rest, state)
-      _ -> error "Run-time error: Loop expects True or False on the stack"
-
+      _ -> error $ "Run-time error: Loop expects True or False on the stack: current stack is " ++ show stack ++ " and current state is " ++ show state
+    
 -- To help you test your assembler
 testAssembler :: Code -> (String, String)
 testAssembler code = (stack2Str stack, state2Str state)
