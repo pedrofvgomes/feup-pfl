@@ -64,7 +64,7 @@ run (inst:insts, stack, state) = case inst of
       _ -> error "Run-time error"
 
     applyLogicOperation op = case stack of
-      x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
+      x:y:rest -> if elem x ["True", "False"] && elem y ["True", "False"] then run (insts, (show (op (read x) (read y))):rest, state) else error "Run-time error"
       _ -> error "Run-time error"
 
     applyNegationOperation = case stack of
@@ -141,8 +141,7 @@ compA code = case code of
   SubA a1 a2 -> compA a1 ++ compA a2 ++ [Sub]
   MultA a1 a2 -> compA a1 ++ compA a2 ++ [Mult]
 
--- compB :: Bexp -> Code
-compB = undefined -- TODO
+
 
 -- compile :: Program -> Code
 compile = undefined -- TODO
