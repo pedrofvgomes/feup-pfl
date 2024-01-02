@@ -1,3 +1,9 @@
+<div align='center'>
+<img src='https://raw.githubusercontent.com/pedrofvgomes/feup-ipc/main/img/feup.png'>
+
+# Functional and Logic Programming
+## Haskell Project
+
 ## Group members and their respective contributions
 - Gaspar Manuel Ferrás Faria (up202108797) - 40%
 - Pedro Filipe Vale Gomes (up202108825) - 60%
