@@ -217,7 +217,8 @@ lexer (c : rest)
 token2Stm :: [Token] -> [Stm]
 token2Stm [] = []
 token2Stm (TokenSemiColon : rest) = token2Stm rest
-token2Stm (TokenVar var : TokenAssign : rest) = Assign var (token2Aexp rest) : token2Stm rest
+token2Stm ((TokenVar var): TokenAssign : rest) = Assign var (token2Aexp exp) : token2Stm rest'
+  where (exp, rest') = break (== TokenSemiColon) rest
 token2Stm (TokenIf : rest) = If (token2Bexp rest) (token2Stm thenn) (token2Stm elsee) : token2Stm rest'
   where 
     (bexp, withThen) = break (== TokenThen) rest
