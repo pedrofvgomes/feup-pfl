@@ -237,6 +237,12 @@ token2Stm (TokenWhile : rest) = While (token2Bexp bexp) (token2Stm stm) : token2
     (stm, rest) = if withDo !! 1 == TokenOpenP then betweenParentheses (tail withDo) else break (== TokenSemiColon) (tail withDo)
 token2Stm _ = error "Syntax error"
 
+token2Aexp :: [Token] -> Aexp
+token2Aexp tokens = 
+  case parseSum tokens of 
+    (exp, []) -> exp
+    (_, _) -> error ("Syntax error")
+
 -- parse :: String -> Program
 parse = undefined
 
