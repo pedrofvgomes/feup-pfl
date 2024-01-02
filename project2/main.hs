@@ -227,14 +227,14 @@ token2Stm (TokenVar var : TokenAssign : rest) = Assign var (token2Aexp rest) : t
 token2Stm (TokenIf : rest) = If (token2Bexp rest) (token2Stm thenn) (token2Stm elsee) : token2Stm rest'
   where 
     (bexp, withThen) = break (== TokenThen) rest
-    afterThen = tail withThen
-    (thenn, withElse) = if head afterThen == TokenOpenP then betweenParentheses afterThen else break (== TokenSemiColon) afterThen
-    afterElse = if (withElse !! 0) == TokenSemiColon then drop 2 withElse else tail withElse
+    afterThen = drop 1 withThen
+    (thenn, withElse) = if (afterThen !! 0) == TokenOpenP then betweenParentheses afterThen else break (== TokenSemiColon) afterThen
+    afterElse = if (withElse !! 0) == TokenSemiColon then drop 2 withElse else drop 1 withElse
     (elsee, rest') = if (afterElse !! 0) == TokenOpenP then betweenParentheses afterElse else break (== TokenSemiColon) afterElse
 token2Stm (TokenWhile : rest) = While (token2Bexp bexp) (token2Stm stm) : token2Stm rest
   where 
     (bexp, withDo) = break (== TokenDo) rest
-    (stm, rest) = if withDo !! 1 == TokenOpenP then betweenParentheses (tail withDo) else break (== TokenSemiColon) (tail withDo)
+    (stm, rest) = if withDo !! 1 == TokenOpenP then betweenParentheses (drop 1 withDo) else break (== TokenSemiColon) (drop 1 withDo)
 token2Stm _ = error "Syntax error"
 
 token2Aexp :: [Token] -> Aexp
@@ -304,8 +304,21 @@ parseParentheses (TokenFalse : rest) = (FalseB, rest)
 parseParentheses (TokenOpenP : rest) = case parseAnd rest of (e, TokenCloseP : rest') -> (e, rest')
 
 
--- parse :: String -> Program
-parse = undefined
+betweenParentheses :: [Token] -> ([Token], [Token])
+betweenParentheses tokens = (elsee, rest)
+  where (rest, _, elsee) = betweenParenthesesAux tokens [] []
+
+betweenParenthesesAux :: [Token] -> [Char] -> [Token] -> ([Token], [Char], [Token])
+betweenParenthesesAux [] stack r = ([], [], reverse r)
+betweenParenthesesAux (TokenOpenP : tokens) stack r = betweenParenthesesAux tokens ('(' : stack) r
+betweenParenthesesAux (TokenCloseP : tokens) stack r = betweenParenthesesAux tokens (drop 1 stack) r
+betweenParenthesesAux (token : tokens) stack r 
+  | null stack = (token:tokens, [], reverse r)
+  | otherwise = betweenParenthesesAux tokens stack (token:r)
+
+
+parse :: String -> Program
+parse = token2Stm . lexer
 
 -- To help you test your parser
 testParser :: String -> (String, String)
