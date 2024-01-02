@@ -243,6 +243,13 @@ token2Aexp tokens =
     (exp, []) -> exp
     (_, _) -> error ("Syntax error")
 
+parseSum :: [Token] -> (Aexp, [Token])
+parseSum tokens = 
+  case parseMult tokens of
+    (e1, TokenAdd : rest) -> case parseSum rest of (e2, rest') -> (AddA e1 e2, rest')
+    (e1, TokenSub : rest) -> case parseSum rest of (e2, rest') -> (SubA e1 e2, rest')
+    result -> result
+
 -- parse :: String -> Program
 parse = undefined
 
