@@ -184,8 +184,43 @@ compileStm (stm:rest) = case stm of
   While b s -> [Loop (compB b) (compileStm s)] ++ compileStm rest
   Seq s -> compileStm s ++ compileStm rest
 
--- parse :: String -> Program
-parse = undefined -- TODO
+
+data Token = 
+  TokenAdd | TokenMult | TokenSub | TokenOpenP | TokenCloseP | TokenIf 
+  | TokenThen | TokenElse | TokenAssign | TokenWhile | TokenDo | TokenTrue 
+  | TokenFalse | TokenAnd | TokenNot | TokenEqA | TokenEqB | TokenLe | TokenSemiColon
+  | TokenNum Integer | TokenVar String
+  deriving (Show, Eq)
+
+lexer :: String -> [Token]
+lexer [] = []
+lexer ('+' : rest) = TokenAdd : lexer rest
+lexer ('*' : rest) = TokenMult : lexer rest
+lexer ('-' : rest) = TokenSub : lexer rest
+lexer ('(' : rest) = TokenOpenP : lexer rest
+lexer (')' : rest) = TokenCloseP : lexer rest
+lexer ('n' : 'o' : 't' : rest) = TokenNot : lexer rest
+lexer ('a' : 'n' : 'd' : rest) = TokenAnd : lexer rest
+lexer ('i' : 'f' : rest) = TokenIf : lexer rest
+lexer ('t' : 'h' : 'e' : 'n' : rest) = TokenThen : lexer rest
+lexer ('e' : 'l' : 's' : 'e' : rest) = TokenElse : lexer rest
+lexer ('w' : 'h' : 'i' : 'l' : 'e' : rest) = TokenWhile : lexer rest
+lexer ('d' : 'o' : rest) = TokenDo : lexer rest
+lexer ('=' : '=' : rest) = TokenEqA : lexer rest
+lexer ('=' : rest) = TokenEqB : lexer rest
+lexer ('<' : '=' : rest) = TokenLe : lexer rest
+lexer (':' : '=' : rest) = TokenAssign : lexer rest
+lexer ('T' : 'r' : 'u' : 'e' : rest) = TokenTrue : lexer rest
+lexer ('F' : 'a' : 'l' : 's' : 'e' : rest) = TokenFalse : lexer rest
+lexer (';' : rest) = TokenSemiColon : lexer rest
+lexer (c : rest)
+  | isSpace c = lexer rest
+  | isDigit c = TokenNum (read num) : lexer rest'
+  | isLower c = TokenVar var : lexer rest''
+  | otherwise = error ("Bad character: " ++ [c])
+  where 
+    (num, rest') = span isDigit (c:rest)
+    (var, rest'') = span isAlphaNum (c:rest)
 
 -- To help you test your parser
 testParser :: String -> (String, String)
