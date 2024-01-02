@@ -265,6 +265,12 @@ parseAtom (atom:rest) = case atom of
     _ -> error ("Syntax error")
   _ -> error ("Syntax error")
 
+token2Bexp :: [Token] -> Bexp
+token2Bexp tokens = 
+  case parseAnd tokens of 
+    (exp, []) -> exp
+    (_, _) -> error ("Syntax error")
+
 -- parse :: String -> Program
 parse = undefined
 
