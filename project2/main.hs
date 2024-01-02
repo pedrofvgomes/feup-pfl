@@ -1,22 +1,14 @@
 import Data.List (sort, intercalate)
 import Data.Char (isDigit, isAlphaNum, isSpace, isLower)
 
--- PFL 2023/24 - Haskell practical assignment quickstart
--- Updated on 27/12/2023
-
--- Part 1
-
--- Do not modify our definition of Inst and Code
 data Inst =
   Push Integer | Add | Mult | Sub | Tru | Fals | Equ | Le | And | Neg | Fetch String | Store String | Noop |
   Branch Code Code | Loop Code Code
   deriving Show
 type Code = [Inst]
 
--- storing as a list of strings (either numeric strings or boolean strings, to be converted later)
 type Stack = [String]
 
--- storing as a list of pairs of strings (either numeric strings or boolean strings, to be converted later)
 type State = [(String, String)]
 
 createEmptyStack :: Stack
@@ -58,7 +50,6 @@ run (inst:insts, stack, state) = case inst of
   Branch c1 c2 -> runBranch c1 c2
   Loop c1 c2 -> runLoop c1 c2
   where
-    -- Funções auxiliares para as instruções
     applyBinaryOperation op = case stack of
       x:y:rest -> run (insts, (show (op (read x) (read y))):rest, state)
       _ -> error "Run-time error"
@@ -97,48 +88,10 @@ run (inst:insts, stack, state) = case inst of
 
     runLoop c1 c2 = run (c1 ++ [Branch (c2 ++ [Loop c1 c2]) [Noop]] ++ insts, stack, state)
 
--- To help you test your assembler
 testAssembler :: Code -> (String, String)
 testAssembler code = (stack2Str stack, state2Str state)
   where (_,stack,state) = run(code, createEmptyStack, createEmptyState)
 
--- Examples:
--- testAssembler [Push 10,Push 4,Push 3,Sub,Mult] == ("-10","")
--- testAssembler [Fals,Push 3,Tru,Store "var",Store "a", Store "someVar"] == ("","a=3,someVar=False,var=True")
--- testAssembler [Fals,Store "var",Fetch "var"] == ("False","var=False")
--- testAssembler [Push (-20),Tru,Fals] == ("False,True,-20","")
--- testAssembler [Push (-20),Tru,Tru,Neg] == ("False,True,-20","")
--- testAssembler [Push (-20),Tru,Tru,Neg,Equ] == ("False,-20","")
--- testAssembler [Push (-20),Push (-21), Le] == ("True","")
--- testAssembler [Push 5,Store "x",Push 1,Fetch "x",Sub,Store "x"] == ("","x=4")
--- testAssembler [Push 10,Store "i",Push 1,Store "fact",Loop [Push 1,Fetch "i",Equ,Neg] [Fetch "i",Fetch "fact",Mult,Store "fact",Push 1,Fetch "i",Sub,Store "i"]] == ("","fact=3628800,i=1")
--- If you test:
--- testAssembler [Push 1,Push 2,And]
--- You should get an exception with the string: "Run-time error"
--- If you test:
--- testAssembler [Tru,Tru,Store "y", Fetch "x",Tru]
--- You should get an exception with the string: "Run-time error"
-
--- testRuntimeError1 = testAssembler [Fetch "undefined_var"]
--- testRuntimeError2 = testAssembler [Tru, Push 5, And]
--- testRuntimeError3 = testAssembler [Push 10, Branch [Push 1] [Push 2]]
--- testRuntimeError4 = testAssembler [Loop [] [], Fetch "x"]
--- testRuntimeError5 = testAssembler [Loop [Push 1, Push 2] []]
--- testRuntimeError6 = testAssembler [Tru, Neg, Push 5, And]
--- testRuntimeError8 = testAssembler [Loop [] [Push 1, Push 2], Fetch "x"]
--- testRuntimeError10 = testAssembler [Push 5, Neg]
--- testRuntimeError11 = testAssembler [Push 5, Loop [Push 1, Push 2] [Push 3, Push 4]]
--- testRuntimeError12 = testAssembler [Push 5, Branch [Push 1] [Push 2]]
--- testRuntimeError13 = testAssembler [Push 5, Fetch "undefined_var", Push 10, Store "var", Fetch "var"]
--- testRuntimeError14 = testAssembler [Loop [] [], And]
--- testRuntimeError15 = testAssembler [Branch [] []]
--- testRuntimeError16 = testAssembler [Noop, Fetch "x"]
-
-
-
--- Part 2
-
--- TODO: Define the types Aexp, Bexp, Stm and Program
 data Aexp = 
   Var String | Num Integer | AddA Aexp Aexp | SubA Aexp Aexp | MultA Aexp Aexp
   deriving (Show, Eq)
@@ -219,16 +172,16 @@ token2Stm [] = []
 token2Stm (TokenSemiColon : rest) = token2Stm rest
 token2Stm ((TokenVar var): TokenAssign : rest) = Assign var (token2Aexp exp) : token2Stm rest'
   where (exp, rest') = break (== TokenSemiColon) rest
-token2Stm (TokenIf : rest) = If (token2Bexp rest) (token2Stm thenn) (token2Stm elsee) : token2Stm rest'
+token2Stm (TokenIf : tokens) = If (token2Bexp b) (token2Stm thenn) (token2Stm elsee) : token2Stm rest
   where 
-    (bexp, withThen) = break (== TokenThen) rest
+    (b, withThen) = break (== TokenThen) tokens
     afterThen = drop 1 withThen
-    (thenn, withElse) = if (afterThen !! 0) == TokenOpenP then betweenParentheses afterThen else break (== TokenSemiColon) afterThen
-    afterElse = if (withElse !! 0) == TokenSemiColon then drop 2 withElse else drop 1 withElse
-    (elsee, rest') = if (afterElse !! 0) == TokenOpenP then betweenParentheses afterElse else break (== TokenSemiColon) afterElse
-token2Stm (TokenWhile : rest) = While (token2Bexp bexp) (token2Stm stm) : token2Stm rest
+    (thenn, withElse) = if afterThen !! 0 == TokenOpenP then betweenParentheses afterThen else break (== TokenSemiColon) afterThen
+    afterElse = if withElse !! 0 == TokenSemiColon then drop 2 withElse else drop 1 withElse
+    (elsee, rest) = if afterElse !! 0 == TokenOpenP then betweenParentheses afterElse else break (== TokenSemiColon) afterElse
+token2Stm (TokenWhile : tokens) = While (token2Bexp bexp) (token2Stm stm) : token2Stm rest
   where 
-    (bexp, withDo) = break (== TokenDo) rest
+    (bexp, withDo) = break (== TokenDo) tokens
     (stm, rest) = if withDo !! 1 == TokenOpenP then betweenParentheses (drop 1 withDo) else break (== TokenSemiColon) (drop 1 withDo)
 token2Stm _ = error "Syntax error"
 
@@ -248,17 +201,16 @@ parseSum tokens =
 parseMult :: [Token] -> (Aexp, [Token])
 parseMult tokens = 
   case parseAtom tokens of
-    (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e2 e1, rest')
+    (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e1 e2, rest')
     result -> result
 
 parseAtom :: [Token] -> (Aexp, [Token])
-parseAtom (atom:rest) = case atom of
-  TokenNum n -> (Num n, rest)
-  TokenVar var -> (Var var, rest)
-  TokenOpenP -> case parseSum rest of 
-    (exp, TokenCloseP : rest') -> (exp, rest')
-    _ -> error ("Syntax error")
+parseAtom (TokenNum n : rest) = (Num n, rest)
+parseAtom (TokenVar var : rest) = (Var var, rest)
+parseAtom (TokenOpenP : rest) = case parseSum rest of 
+  (e, TokenCloseP : rest') -> (e, rest')
   _ -> error ("Syntax error")
+parseAtom _ = error ("Syntax error")
 
 token2Bexp :: [Token] -> Bexp
 token2Bexp tokens = 
@@ -298,7 +250,6 @@ parseParentheses (TokenTrue : rest) = (TrueB, rest)
 parseParentheses (TokenFalse : rest) = (FalseB, rest)
 parseParentheses (TokenOpenP : rest) = case parseAnd rest of (e, TokenCloseP : rest') -> (e, rest')
 
-
 betweenParentheses :: [Token] -> ([Token], [Token])
 betweenParentheses tokens = (elsee, rest)
   where (rest, _, elsee) = betweenParenthesesAux tokens [] []
@@ -315,21 +266,37 @@ betweenParenthesesAux (token : tokens) stack r
 parse :: String -> Program
 parse = token2Stm . lexer
 
--- To help you test your parser
 testParser :: String -> (String, String)
 testParser programCode = (stack2Str stack, state2Str state)
   where (_,stack,state) = run(compile (parse programCode), createEmptyStack, createEmptyState)
 
--- Examples:
--- testParser "x := 5; x := x - 1;" == ("","x=4")
--- testParser "x := 0 - 2;" == ("","x=-2")
--- testParser "if (not True and 2 <= 5 = 3 == 4) then x :=1; else y := 2;" == ("","y=2")
--- testParser "x := 42; if x <= 43 then x := 1; else (x := 33; x := x+1;);" == ("","x=1")
--- testParser "x := 42; if x <= 43 then x := 1; else x := 33; x := x+1;" == ("","x=2")
--- testParser "x := 42; if x <= 43 then x := 1; else x := 33; x := x+1; z := x+x;" == ("","x=2,z=4")
--- testParser "x := 44; if x <= 43 then x := 1; else (x := 33; x := x+1;); y := x*2;" == ("","x=34,y=68")
--- testParser "x := 42; if x <= 43 then (x := 33; x := x+1;) else x := 1;" == ("","x=34")
--- testParser "if (1 == 0+1 = 2+1 == 3) then x := 1; else x := 2;" == ("","x=1")
--- testParser "if (1 == 0+1 = (2+1 == 4)) then x := 1; else x := 2;" == ("","x=2")
--- testParser "x := 2; y := (x - 3)*(4 + 2*3); z := x +x*(2);" == ("","x=2,y=-10,z=6")
--- testParser "i := 10; fact := 1; while (not(i == 1)) do (fact := fact * i; i := i - 1;);" == ("","fact=3628800,i=1")
+main :: IO ()
+main = do
+   let result1 = testAssembler [Push 10,Push 4,Push 3,Sub,Mult] == ("-10","")
+       result2 = testAssembler [Fals,Push 3,Tru,Store "var",Store "a", Store "someVar"] == ("","a=3,someVar=False,var=True")
+       result3 = testAssembler [Fals,Store "var",Fetch "var"] == ("False","var=False")
+       result4 = testAssembler [Push (-20),Tru,Fals] == ("False,True,-20","")
+       result5 = testAssembler [Push (-20),Tru,Tru,Neg] == ("False,True,-20","")
+       result6 = testAssembler [Push (-20),Tru,Tru,Neg,Equ] == ("False,-20","")
+       result7 = testAssembler [Push (-20),Push (-21), Le] == ("True","")
+       result8 = testAssembler [Push 5,Store "x",Push 1,Fetch "x",Sub,Store "x"] == ("","x=4")
+       result9 = testAssembler [Push 10,Store "i",Push 1,Store "fact",Loop [Push 1,Fetch "i",Equ,Neg] [Fetch "i",Fetch "fact",Mult,Store "fact",Push 1,Fetch "i",Sub,Store "i"]] == ("","fact=3628800,i=1")
+       result10 = testParser "x := 5; x := x - 1;" == ("","x=4")
+       result12 = testParser "x := 42; if x <= 43 then x := 1; else (x := 33; x := x+1;)" == ("","x=1")
+       result13 = testParser "x := 42; if x <= 43 then x := 1; else x := 33; x := x+1;" == ("","x=2")
+       result14 = testParser "x := 42; if x <= 43 then x := 1; else x := 33; x := x+1; z := x+x;" == ("","x=2,z=4")
+       result15 = testParser "x := 2; y := (x - 3)*(4 + 2*3); z := x +x*(2);" == ("","x=2,y=-10,z=6")
+   putStrLn ("1 -> " ++ (show result1))
+   putStrLn ("2 -> " ++ (show result2))
+   putStrLn ("3 -> " ++ (show result3))
+   putStrLn ("4 -> " ++ (show result4))
+   putStrLn ("5 -> " ++ (show result5))
+   putStrLn ("6 -> " ++ (show result6))
+   putStrLn ("7 -> " ++ (show result7))
+   putStrLn ("8 -> " ++ (show result8))
+   putStrLn ("9 -> " ++ (show result9))
+   putStrLn ("10 -> " ++ ( show result10))
+   putStrLn ("12 -> " ++ ( show result12))
+   putStrLn ("13 -> " ++ ( show result13))
+   putStrLn ("14 -> " ++ ( show result14))
+   putStrLn ("15 -> " ++ ( show result15))

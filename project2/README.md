@@ -1,6 +1,6 @@
 ## Group members and their respective contributions
-- Gaspar Manuel Ferrás Faria (up202108797) - X%
-- Pedro Filipe Vale Gomes (up202108825) - X%
+- Gaspar Manuel Ferrás Faria (up202108797) - 40%
+- Pedro Filipe Vale Gomes (up202108825) - 60%
 
 ## Description of the project
 This project was divided into two parts. In the first part, we developed a program to manage a stack, executing a sequence of specific operations. In the second part, the aim was to translate a set of commands from a simple programming language into a format understandable by our compiler.
@@ -156,9 +156,9 @@ Program: Represents the entire program structure.
      compA exp = case exp of
     Var x -> [Fetch x]
     Num n -> [Push n]
-    AddA a1 a2 -> compA a1 ++ compA a2 ++ [Add]
-    SubA a1 a2 -> compA a1 ++ compA a2 ++ [Sub]
-    MultA a1 a2 -> compA a1 ++ compA a2 ++ [Mult]
+    AddA a1 a2 -> compA a2 ++ compA a1 ++ [Add]
+    SubA a1 a2 -> compA a2 ++ compA a1 ++ [Sub]
+    MultA a1 a2 -> compA a2 ++ compA a1 ++ [Mult]
      ``````
 
     - compB: Handles the translation of boolean expressions (Bexp) into executable code.
@@ -168,10 +168,10 @@ Program: Represents the entire program structure.
     compB exp = case exp of
     TrueB -> [Tru]
     FalseB -> [Fals]
-    AndB b1 b2 -> compB b1 ++ compB b2 ++ [And]
-    EqA a1 a2 -> compA a1 ++ compA a2 ++ [Equ]
-    EqB b1 b2 -> compB b1 ++ compB b2 ++ [Equ]
-    LeB a1 a2 -> compA a1 ++ compA a2 ++ [Le]
+    AndB b1 b2 -> compB b2 ++ compB b1 ++ [And]
+    EqA a1 a2 -> compA a2 ++ compA a1 ++ [Equ]
+    EqB b1 b2 -> compB b2 ++ compB b1 ++ [Equ]
+    LeB a1 a2 -> compA a2 ++ compA a1 ++ [Le]
     NotB b -> compB b ++ [Neg] 
      ``````
 
@@ -179,22 +179,13 @@ Program: Represents the entire program structure.
 
     ```haskell
     compile :: Program -> Code
-    compile program = let code = compileStm program in code
-
-    compileStm :: [Stm] -> Code
-    compileStm [] = []
-    compileStm (stm:rest) = case stm of 
-    Assign var a -> compA a ++ [Store var] ++ compileStm rest
-    If b s1 s2 -> compB b ++ [Branch (compileStm s1) (compileStm s2)] ++ compileStm rest
-    While b s -> [Loop (compB b) (compileStm s)] ++ compileStm rest
-    Seq s -> compileStm s ++ compileStm rest
- 
+    compile [] = []
+    compile (Assign var a:rest) = compA a ++ [Store var] ++ compile rest
+    compile (If b s1 s2:rest) = compB b ++ [Branch (compile s1) (compile s2)] ++ compile rest
+    compile (While b s:rest) = Loop (compB b) (compile s) : compile rest
      `````` 
 
     - parse: Focuses on parsing a string representation of a program into a structured program understandable by the interpreter.
-    ```haskell
-    Meter função aqui
-     `````` 
 
 - The testParser function assists in testing the parser's functionality. It converts a string representation of a program into executable code, executes it, and provides the resulting stack and state.
 
@@ -202,4 +193,4 @@ Program: Represents the entire program structure.
 ## Conclusion
 
 
-This project allowed the integration between the theoretical knowledge acquired in the course and its practical application.During the implementation of the compiler and interpreter, we learned the importance of meticulous error analysis. This highlighted the relevance of careful debugging and a deep understanding of execution flows to ensure the accuracy and reliability of the final program, as we passed all the provided tests in the template and we accomplish additional tests. 
+This project allowed the integration between the theoretical knowledge acquired in the course and its practical application. During the implementation of the compiler and interpreter, we learned the importance of meticulous error analysis. This highlighted the relevance of careful debugging and a deep understanding of execution flows to ensure the accuracy and reliability of the final program.
