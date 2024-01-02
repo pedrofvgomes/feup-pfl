@@ -220,156 +220,25 @@ lexer (c : rest)
     (num, rest') = span isDigit (c:rest)
     (var, rest'') = span isAlphaNum (c:rest)
 
-buildData :: [Token] -> [Stm]
-buildData [] = []
-buildData (TokenSemiColon:tokens) = buildData tokens
-buildData ((TokenVar var):TokenAssign:tokens) = Assign var (buildAexp aexp) : buildData rest
-  where (aexp, rest) = break (== TokenSemiColon) tokens
+token2Stm :: [Token] -> [Stm]
+token2Stm [] = []
+token2Stm (TokenSemiColon : rest) = token2Stm rest
+token2Stm (TokenVar var : TokenAssign : rest) = Assign var (token2Aexp rest) : token2Stm rest
+token2Stm (TokenIf : rest) = If (token2Bexp rest) (token2Stm thenn) (token2Stm elsee) : token2Stm rest'
+  where 
+    (bexp, withThen) = break (== TokenThen) rest
+    afterThen = tail withThen
+    (thenn, withElse) = if head afterThen == TokenOpenP then betweenParentheses afterThen else break (== TokenSemiColon) afterThen
+    afterElse = if (withElse !! 0) == TokenSemiColon then drop 2 withElse else tail withElse
+    (elsee, rest') = if (afterElse !! 0) == TokenOpenP then betweenParentheses afterElse else break (== TokenSemiColon) afterElse
+token2Stm (TokenWhile : rest) = While (token2Bexp bexp) (token2Stm stm) : token2Stm rest
+  where 
+    (bexp, withDo) = break (== TokenDo) rest
+    (stm, rest) = if withDo !! 1 == TokenOpenP then betweenParentheses (tail withDo) else break (== TokenSemiColon) (tail withDo)
+token2Stm _ = error "Syntax error"
 
-buildData (TokenIf:tokens) = If (buildBexp bexp) (buildData thenTokens) (buildData elseTokens) : buildData rest
-    where (bexp, withThenTokens) = break (== TokenThen) tokens
-          afterThenTokens = tail withThenTokens
-          (thenTokens, withElseTokens) = 
-                if head afterThenTokens == TokenOpenP then
-                  getBetweenParenTokens afterThenTokens 
-                else
-                    break (== TokenSemiColon) afterThenTokens
-          afterElseTokens =
-                if head withElseTokens == TokenSemiColon then
-                  drop 2 withElseTokens   -- drop SemiColonTok and ElseTok
-                else
-                  tail withElseTokens     -- drop ElseTok
-          (elseTokens, rest) =
-                if head afterElseTokens == TokenOpenP then    -- if parenthesis
-                    getBetweenParenTokens afterElseTokens       -- statements between parenthesis
-                else
-                    break (== TokenSemiColon) afterElseTokens     -- only 1 statement w/o parenthesis
-
-buildData (TokenWhile:tokens) = While (buildBexp bexp) (buildData doTokens) : buildData rest
-    where (bexp, withDoTokens) = break (== TokenDo) tokens
-          (doTokens, rest) =
-                if head (tail withDoTokens) == TokenOpenP then
-                    getBetweenParenTokens (tail withDoTokens)
-                else
-                    break (== TokenSemiColon) (tail withDoTokens)
-buildData _ = error "Invalid program on buildData"
-buildAexp :: [Token] -> Aexp
-buildAexp tokens =
-    case parseSumOrHigher tokens of
-        (expr, []) -> expr
-        (_, _) -> error "Error building arithmetic expression"
-
-parseSumOrHigher :: [Token] -> (Aexp, [Token])
-parseSumOrHigher tokens =
-    case parseMultOrHigher tokens of
-        (expr1, TokenAdd : restTokens1) ->
-            case parseSumOrHigher restTokens1 of
-                (expr2, restTokens2) -> (AddA expr1 expr2, restTokens2)
-        (expr1, TokenSub : restTokens1) ->
-            case parseSumOrHigher restTokens1 of
-                (expr2, restTokens2) -> (SubA expr2 expr1, restTokens2)
-        result -> result
-
-parseMultOrHigher :: [Token] -> (Aexp, [Token])
-parseMultOrHigher tokens =
-    case parseAtom tokens of
-        (expr1, TokenMult : restTokens1) ->
-            case parseMultOrHigher restTokens1 of
-                (expr2, restTokens2) -> (MultA expr1 expr2, restTokens2)
-        result -> result
-
-parseAtom :: [Token] -> (Aexp, [Token])
-parseAtom (TokenNum n : restTokens) = (Num n, restTokens)
-parseAtom (TokenVar var : restTokens) = (Var var, restTokens)
-parseAtom (TokenOpenP : restTokens1) =
-    case parseSumOrHigher restTokens1 of
-        (expr, TokenCloseP : restTokens2) -> (expr, restTokens2)
-        _ -> error "Error parsing atom (vars, consts and parenthesis-wraped expressions)"  -- no closing parenthesis or not parseable expression
-parseAtom _ = error "Error parsing atom (vars, consts and parenthesis-wraped expressions)"
-
--- Parse and build Boolean expressions
-
-buildBexp :: [Token] -> Bexp
-buildBexp tokens = case parseAndOrHigher tokens of
-    (expr, []) -> expr
-    _ -> error "Error building boolean expression"
-
-
-parseAndOrHigher :: [Token] -> (Bexp, [Token])
-parseAndOrHigher tokens = case parseBoolEqOrHigher tokens of
-    (expr1, TokenAnd : restTokens1) ->
-        case parseAndOrHigher restTokens1 of
-            (expr2, restTokens2) -> (AndB expr1 expr2, restTokens2)
-    result -> result
-
-parseBoolEqOrHigher :: [Token] -> (Bexp, [Token])
-parseBoolEqOrHigher tokens = case parseNotOrHigher tokens of
-    (expr1, TokenEqB : restTokens1) ->
-        case parseBoolEqOrHigher restTokens1 of
-            (expr2, restTokens2) -> (EqB expr1 expr2, restTokens2)
-    result -> result
-
-parseNotOrHigher :: [Token] -> (Bexp, [Token])
-parseNotOrHigher (TokenNot : rest) = case parseNotOrHigher rest of
-    (expr, restTokens) -> (NotB expr, restTokens)
-parseNotOrHigher tokens = parseIntEqOrHigher tokens
-
-parseIntEqOrHigher :: [Token] -> (Bexp, [Token])
-parseIntEqOrHigher tokens = case parseSumOrHigher tokens of
-    (expr1, TokenEqA : restTokens1) ->
-        case parseSumOrHigher restTokens1 of
-            (expr2, restTokens2) -> (EqA expr1 expr2, restTokens2)
-    result -> parseLeOrHigher tokens
-
-parseLeOrHigher :: [Token] -> (Bexp, [Token])
-parseLeOrHigher tokens = case parseSumOrHigher tokens of
-    (expr1, TokenLe : restTokens1) ->
-        case parseSumOrHigher restTokens1 of
-            (expr2, restTokens2) -> (LeB expr1 expr2, restTokens2)
-    result -> parseTrueParen tokens  -- if cannot parseAexp or there is no LessOrEqTok
-
-parseTrueParen :: [Token] -> (Bexp, [Token])
-parseTrueParen (TokenTrue : restTokens) = (TrueB, restTokens)
-parseTrueParen (TokenFalse : restTokens) = (TrueB, restTokens)
-parseTrueParen (TokenOpenP : restTokens1) = case parseAndOrHigher restTokens1 of
-    (expr, TokenCloseP : restTokens2) -> (expr, restTokens2)
-
-
-
-type ResultTokens = [Token]
-type RemainderTokens = [Token]
-type ParenthesisStack = [Char]
-
--- assumes the expression always has parentheses (must start with OpenParenTok)
-getBetweenParenTokens :: [Token] -> (ResultTokens, RemainderTokens)
-getBetweenParenTokens tokens = (elseTokens, restTokens)
-  where (restTokens, _, elseTokens) = getBetweenParenTokensAux tokens [] []
-
--- Receives tokens to process, stack and current result
--- Returns remainder, stack, and result
-getBetweenParenTokensAux :: RemainderTokens -> ParenthesisStack -> ResultTokens
-    -> (RemainderTokens, ParenthesisStack, ResultTokens)
--- reverse the result since tokens are inserted in reversed order
--- no more tokens, return result
-getBetweenParenTokensAux [] stk res = ([], [], reverse res)
-
--- push parenthesis to stack
-getBetweenParenTokensAux (TokenOpenP:tokens) stk res = 
-    getBetweenParenTokensAux tokens ('(':stk) res
-
--- pop parenthesis from stack
-getBetweenParenTokensAux (TokenCloseP:tokens) stk res = 
-    getBetweenParenTokensAux tokens (tail stk) res
-
--- stack is empty (parentheses fully closed) -> return result
--- if stack non-empty (non-closed parentheses), token is part of the expression
-getBetweenParenTokensAux (tok:tokens) stk res    
-    | null stk   = (tok:tokens, [], reverse res)
-    | otherwise  = getBetweenParenTokensAux tokens stk (tok:res)
-
--- Parser
-parse :: String -> Program
-parse = buildData . lexer
+-- parse :: String -> Program
+parse = undefined
 
 -- To help you test your parser
 testParser :: String -> (String, String)
