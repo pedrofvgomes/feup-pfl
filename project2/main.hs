@@ -250,6 +250,12 @@ parseSum tokens =
     (e1, TokenSub : rest) -> case parseSum rest of (e2, rest') -> (SubA e1 e2, rest')
     result -> result
 
+parseMult :: [Token] -> (Aexp, [Token])
+parseMult tokens = 
+  case parseAtom tokens of
+    (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e1 e2, rest')
+    result -> result
+
 -- parse :: String -> Program
 parse = undefined
 
