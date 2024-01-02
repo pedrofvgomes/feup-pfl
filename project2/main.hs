@@ -156,32 +156,26 @@ compA :: Aexp -> Code
 compA exp = case exp of
   Var x -> [Fetch x]
   Num n -> [Push n]
-  AddA a1 a2 -> compA a1 ++ compA a2 ++ [Add]
-  SubA a1 a2 -> compA a1 ++ compA a2 ++ [Sub]
+  AddA a1 a2 -> compA a2 ++ compA a1 ++ [Add]
+  SubA a1 a2 -> compA a2 ++ compA a1 ++ [Sub]
   MultA a1 a2 -> compA a2 ++ compA a1 ++ [Mult]
 
 compB :: Bexp -> Code
 compB exp = case exp of
   TrueB -> [Tru]
   FalseB -> [Fals]
-  AndB b1 b2 -> compB b1 ++ compB b2 ++ [And]
-  EqA a1 a2 -> compA a1 ++ compA a2 ++ [Equ]
-  EqB b1 b2 -> compB b1 ++ compB b2 ++ [Equ]
-  LeB a1 a2 -> compA a1 ++ compA a2 ++ [Le]
+  AndB b1 b2 -> compB b2 ++ compB b1 ++ [And]
+  EqA a1 a2 -> compA a2 ++ compA a1 ++ [Equ]
+  EqB b1 b2 -> compB b2 ++ compB b1 ++ [Equ]
+  LeB a1 a2 -> compA a2 ++ compA a1 ++ [Le]
   NotB b -> compB b ++ [Neg]
 
 
 compile :: Program -> Code
-compile program = let code = compileStm program in code
-
-compileStm :: [Stm] -> Code
-compileStm [] = []
-compileStm (stm:rest) = case stm of 
-  Assign var a -> compA a ++ [Store var] ++ compileStm rest
-  If b s1 s2 -> compB b ++ [Branch (compileStm s1) (compileStm s2)] ++ compileStm rest
-  While b s -> [Loop (compB b) (compileStm s)] ++ compileStm rest
-  Seq s -> compileStm s ++ compileStm rest
-
+compile [] = []
+compile (Assign var a:rest) = compA a ++ [Store var] ++ compile rest
+compile (If b s1 s2:rest) = compB b ++ [Branch (compile s1) (compile s2)] ++ compile rest
+compile (While b s:rest) = Loop (compB b) (compile s) : compile rest
 
 data Token = 
   TokenAdd | TokenMult | TokenSub | TokenOpenP | TokenCloseP | TokenIf 
@@ -253,7 +247,7 @@ parseSum tokens =
 parseMult :: [Token] -> (Aexp, [Token])
 parseMult tokens = 
   case parseAtom tokens of
-    (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e1 e2, rest')
+    (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e2 e1, rest')
     result -> result
 
 parseAtom :: [Token] -> (Aexp, [Token])
