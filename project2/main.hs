@@ -256,6 +256,15 @@ parseMult tokens =
     (e1, TokenMult : rest) -> case parseMult rest of (e2, rest') -> (MultA e1 e2, rest')
     result -> result
 
+parseAtom :: [Token] -> (Aexp, [Token])
+parseAtom (atom:rest) = case atom of
+  TokenNum n -> (Num n, rest)
+  TokenVar var -> (Var var, rest)
+  TokenOpenP -> case parseSum rest of 
+    (exp, TokenCloseP : rest') -> (exp, rest')
+    _ -> error ("Syntax error")
+  _ -> error ("Syntax error")
+
 -- parse :: String -> Program
 parse = undefined
 
