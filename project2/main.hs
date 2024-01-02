@@ -283,6 +283,27 @@ parseEqB tokens =
     (e1, TokenEqB : rest) -> case parseEqB rest of (e2, rest') -> (EqB e1 e2, rest')
     result -> result
 
+parseNot :: [Token] -> (Bexp, [Token])
+parseNot (TokenNot : rest) = case parseNot rest of (e, rest) -> (NotB e, rest)
+parseNot tokens = parseEqA tokens
+
+parseEqA :: [Token] -> (Bexp, [Token])
+parseEqA tokens = 
+  case parseSum tokens of 
+    (e1, TokenEqA : rest) -> case parseSum rest of (e2, rest') -> (EqA e1 e2, rest')
+    result -> parseLe tokens
+
+parseLe :: [Token] -> (Bexp, [Token])
+parseLe tokens = case parseSum tokens of
+  (e1, TokenLe : rest) -> case parseSum rest of (e2, rest') -> (LeB e1 e2, rest')
+  result -> parseParentheses tokens
+
+parseParentheses :: [Token] -> (Bexp, [Token])
+parseParentheses (TokenTrue : rest) = (TrueB, rest)
+parseParentheses (TokenFalse : rest) = (FalseB, rest)
+parseParentheses (TokenOpenP : rest) = case parseAnd rest of (e, TokenCloseP : rest') -> (e, rest')
+
+
 -- parse :: String -> Program
 parse = undefined
 
