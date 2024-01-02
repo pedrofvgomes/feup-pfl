@@ -68,7 +68,7 @@ run (inst:insts, stack, state) = case inst of
       _ -> error "Run-time error"
 
     applyNegationOperation = case stack of
-      x:rest -> run (insts, (show (not (read x))):rest, state)
+      x:rest -> if elem x ["True", "False"] then run (insts, (show (not (read x))):rest, state) else error "Run-time error"
       _ -> error "Run-time error"
 
     pushValue val = run (insts, val:stack, state)
@@ -121,15 +121,13 @@ testAssembler code = (stack2Str stack, state2Str state)
 
 -- testRuntimeError1 = testAssembler [Fetch "undefined_var"]
 -- testRuntimeError2 = testAssembler [Tru, Push 5, And]
--- ver testRuntimeError3 = testAssembler [Push 10, Branch [Push 1] [Push 2]]
+-- testRuntimeError3 = testAssembler [Push 10, Branch [Push 1] [Push 2]]
 -- testRuntimeError4 = testAssembler [Loop [] [], Fetch "x"]
--- ver testRuntimeError5 = testAssembler [Loop [Push 1, Push 2] []]
+-- testRuntimeError5 = testAssembler [Loop [Push 1, Push 2] []]
 -- testRuntimeError6 = testAssembler [Tru, Neg, Push 5, And]
--- ver testRuntimeError7 = testAssembler [Push 10, Store "x", Push 20, Store "x", Fetch "x"]
 -- testRuntimeError8 = testAssembler [Loop [] [Push 1, Push 2], Fetch "x"]
--- ver testRuntimeError9 = testAssembler [Push 5, Push "String", Equ]
--- ver testRuntimeError10 = testAssembler [Push 5, Neg]
--- ver testRuntimeError11 = testAssembler [Push 5, Loop [Push 1, Push 2] [Push 3, Push 4]]
+-- testRuntimeError10 = testAssembler [Push 5, Neg]
+-- testRuntimeError11 = testAssembler [Push 5, Loop [Push 1, Push 2] [Push 3, Push 4]]
 -- testRuntimeError12 = testAssembler [Push 5, Branch [Push 1] [Push 2]]
 -- testRuntimeError13 = testAssembler [Push 5, Fetch "undefined_var", Push 10, Store "var", Fetch "var"]
 -- testRuntimeError14 = testAssembler [Loop [] [], And]
