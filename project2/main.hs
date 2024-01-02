@@ -271,6 +271,12 @@ token2Bexp tokens =
     (exp, []) -> exp
     (_, _) -> error ("Syntax error")
 
+parseAnd :: [Token] -> (Bexp, [Token])
+parseAnd tokens = 
+  case parseEq tokens of
+    (e1, TokenAnd : rest) -> case parseAnd rest of (e2, rest') -> (AndB e1 e2, rest')
+    result -> result
+
 -- parse :: String -> Program
 parse = undefined
 
