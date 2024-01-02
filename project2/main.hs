@@ -273,8 +273,14 @@ token2Bexp tokens =
 
 parseAnd :: [Token] -> (Bexp, [Token])
 parseAnd tokens = 
-  case parseEq tokens of
+  case parseEqB tokens of
     (e1, TokenAnd : rest) -> case parseAnd rest of (e2, rest') -> (AndB e1 e2, rest')
+    result -> result
+
+parseEqB :: [Token] -> (Bexp, [Token])
+parseEqB tokens = 
+  case parseNot tokens of 
+    (e1, TokenEqB : rest) -> case parseEqB rest of (e2, rest') -> (EqB e1 e2, rest')
     result -> result
 
 -- parse :: String -> Program
